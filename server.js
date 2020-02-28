@@ -3,14 +3,20 @@ var url = require('url');
 
 function iniciar(route, handle) {
 	function onRequest(request, response) {
+		var postData = '';
 		var pathname = url.parse(request.url).pathname;
 		console.log(`Request a ${pathname} recibido.`);
 
-		route(pathname, handle);
+		request.setEncoding('utf8');
+		request.addListener('data', function (datos) {
+			postData += datos;
+			console.log(`POST recibido ${datos}.`);
+		})
 
-		response.writeHead(200, {'Content-Type': 'text/html'});
-		response.write('holis');
-		response.end();
+		request.addListener('end', function(){
+			route(pathname, handle, response, postData);
+		});
+		
 	}
 	
 	http.createServer(onRequest).listen(8080);
